@@ -112,4 +112,8 @@ curl localhost:3000/api/matches/1/scoreboard
 
 ## Equipe
 
-Preencha com os nomes dos integrantes.
+- Carlos Henrique de Lima Junior
+- Miquissene Visa
+- Matheus Kenzo Sasaki de Carvalho
+- Leonardo da Costa Loureiro
+- Carlos Eduardo de Andrade Ferreira
