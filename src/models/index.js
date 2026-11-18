@@ -23,6 +23,9 @@ const Match = sequelize.define('Match', {
 
   timerType: { type: DataTypes.ENUM(...TIMER_TYPES), allowNull: false },
   periodDurationSeconds: { type: DataTypes.INTEGER, allowNull: true },
+  // Estado do cronômetro: tempo acumulado + instante em que foi iniciado (null = pausado)
+  timerElapsedMs: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+  timerStartedAt: { type: DataTypes.DATE, allowNull: true },
 
   // Estado derivado dos eventos (mantido para listagens rápidas)
   scoreA: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },

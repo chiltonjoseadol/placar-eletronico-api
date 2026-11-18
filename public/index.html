@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel - Placar Eletrônico</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="topbar">
+    <h1>🏆 Painel do Placar Eletrônico</h1>
+    <nav>
+      <a href="/placar.html" target="_blank">Telão</a>
+      <a href="/apidocs" target="_blank">Swagger</a>
+      <span id="userbox" class="hidden"><span id="username" class="muted"></span> <button id="logout" class="small">Sair</button></span>
+    </nav>
+  </div>
+
+  <div class="container">
+    <!-- Login / cadastro -->
+    <section id="authView" class="card" style="max-width:420px; margin:0 auto; width:100%;">
+      <div class="tabs">
+        <button id="tabLogin" class="active">Entrar</button>
+        <button id="tabRegister">Cadastrar</button>
+      </div>
+      <form id="authForm">
+        <div class="field hidden" id="nameField"><label>Nome</label><input id="authName" autocomplete="name"></div>
+        <div class="field"><label>E-mail</label><input id="authEmail" type="email" required autocomplete="email"></div>
+        <div class="field"><label>Senha (mín. 6)</label><input id="authPass" type="password" required autocomplete="current-password"></div>
+        <button class="primary" style="width:100%" id="authSubmit">Entrar</button>
+      </form>
+    </section>
+
+    <!-- Lista e criação -->
+    <div id="listView" class="hidden" style="display:contents">
+      <section class="card">
+        <h2>Nova partida</h2>
+        <form id="createForm">
+          <div class="grid3">
+            <div class="field">
+              <label>Modalidade</label>
+              <select id="cSport">
+                <option value="futebol">Futebol</option>
+                <option value="basquete">Basquete</option>
+                <option value="volei_quadra">Vôlei de quadra</option>
+                <option value="volei_praia">Vôlei de praia</option>
+              </select>
+            </div>
+            <div class="field"><label>Duração do período (min, opcional)</label><input id="cDuration" type="number" min="1" placeholder="padrão da modalidade"></div>
+            <div class="field"><label>Cronômetro</label>
+              <select id="cTimer">
+                <option value="">Padrão da modalidade</option>
+                <option value="progressivo">Progressivo</option>
+                <option value="regressivo">Regressivo</option>
+                <option value="nenhum">Nenhum</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid2">
+            <div>
+              <h3>Time A</h3>
+              <div class="field"><label>Nome</label><input id="cNameA" required></div>
+              <div class="grid2">
+                <div class="field"><label>Sigla (até 5)</label><input id="cShortA" maxlength="5"></div>
+                <div class="field"><label>Cor</label><input id="cColorA" type="color" value="#ff0000"></div>
+              </div>
+            </div>
+            <div>
+              <h3>Time B</h3>
+              <div class="field"><label>Nome</label><input id="cNameB" required></div>
+              <div class="grid2">
+                <div class="field"><label>Sigla (até 5)</label><input id="cShortB" maxlength="5"></div>
+                <div class="field"><label>Cor</label><input id="cColorB" type="color" value="#0000ff"></div>
+              </div>
+            </div>
+          </div>
+          <button class="primary">Criar partida</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Partidas</h2>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>#</th><th>Modalidade</th><th>Times</th><th>Placar</th><th>Status</th><th></th></tr></thead>
+            <tbody id="matchRows"></tbody>
+          </table>
+        </div>
+        <p id="emptyMsg" class="muted hidden">Nenhuma partida criada ainda.</p>
+      </section>
+    </div>
+
+    <!-- Controle de uma partida -->
+    <div id="controlView" class="hidden" style="display:contents">
+      <section class="card">
+        <div class="row" style="justify-content:space-between; margin-bottom:12px">
+          <button id="backBtn" class="small">← Voltar</button>
+          <span class="row">
+            <span id="ctlStatus" class="badge"></span>
+            <a id="tvLink" href="#" target="_blank">Abrir telão ↗</a>
+          </span>
+        </div>
+        <div class="preview">
+          <div class="pteam" id="pvA"><div class="pshort"></div><div class="pscore"></div><div class="psets"></div></div>
+          <div class="pcenter"><div class="ptimer" id="pvTimer"></div><div class="pperiod" id="pvPeriod"></div></div>
+          <div class="pteam" id="pvB"><div class="pshort"></div><div class="pscore"></div><div class="psets"></div></div>
+        </div>
+        <p id="ownerMsg" class="muted hidden">Você não é o criador desta partida: só é possível visualizar.</p>
+      </section>
+
+      <section class="card" id="matchControls">
+        <h2>Controle da partida</h2>
+        <div class="row" id="flowBtns"></div>
+      </section>
+
+      <section class="card" id="eventPanel">
+        <div class="field" style="max-width:360px">
+          <label>Jogador (opcional, enviado junto com o evento)</label>
+          <input id="playerName" placeholder="Ex.: Fulano">
+        </div>
+        <div class="grid2">
+          <div class="teamctl" id="ctlA"></div>
+          <div class="teamctl" id="ctlB"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="row" style="justify-content:space-between">
+          <h2 style="margin:0">Eventos</h2>
+          <button id="undoBtn" class="warn small">Desfazer último</button>
+        </div>
+        <div id="eventLog" class="log"></div>
+      </section>
+    </div>
+  </div>
+
+  <script src="/js/common.js"></script>
+  <script src="/js/painel.js"></script>
+</body>
+</html>

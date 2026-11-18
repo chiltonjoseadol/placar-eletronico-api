@@ -20,6 +20,7 @@ router.get('/matches/:id/scoreboard', h(matches.scoreboard));
 router.post('/matches', authenticate, h(matches.create));
 router.put('/matches/:id', authenticate, h(matches.update));
 router.patch('/matches/:id/status', authenticate, h(matches.changeStatus));
+router.patch('/matches/:id/timer', authenticate, h(matches.timer));
 router.patch('/matches/:id/period/next', authenticate, h(matches.nextPeriod));
 router.delete('/matches/:id', authenticate, h(matches.remove));
 

@@ -68,8 +68,22 @@ function check(label, cond, extra) {
     check('ponto de 4 inválido 400', r.status === 400, r);
     r = await call('POST', `/matches/${bId}/events`, { team: 'B', type: 'gol' }, token);
     check('gol no basquete 400', r.status === 400, r);
+    r = await call('PATCH', `/matches/${bId}/timer`, { action: 'start' }, token);
+    check('cronômetro iniciado', r.status === 200 && r.body.timer.running === true, r);
+    await new Promise((res) => setTimeout(res, 1200));
+    r = await call('GET', `/matches/${bId}/scoreboard`);
+    check('cronômetro contando', r.body.timer.elapsedSeconds >= 1, r.body.timer);
+    r = await call('PATCH', `/matches/${bId}/timer`, { action: 'pause' }, token);
+    const frozen = r.body.timer.elapsedSeconds;
+    await new Promise((res) => setTimeout(res, 1100));
+    r = await call('GET', `/matches/${bId}/scoreboard`);
+    check('cronômetro pausado congela', r.body.timer.running === false && r.body.timer.elapsedSeconds === frozen, r.body.timer);
+    r = await call('PATCH', `/matches/${bId}/timer`, { action: 'xyz' }, token);
+    check('ação de cronômetro inválida 400', r.status === 400, r);
     r = await call('PATCH', `/matches/${bId}/period/next`, null, token);
     check('avança quarto', r.status === 200 && r.body.currentPeriod === 2, r);
+    r = await call('GET', `/matches/${bId}/scoreboard`);
+    check('novo quarto zera cronômetro', r.body.timer.elapsedSeconds === 0 && !r.body.timer.running, r.body.timer);
     r = await call('GET', `/matches/${bId}/scoreboard`);
     check('scoreboard público com cor e quarto 2', r.status === 200 && r.body.teams.A.color === '#552583' && r.body.period.current === 2, r);
 

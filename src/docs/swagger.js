@@ -87,7 +87,7 @@ module.exports = {
           sportLabel: 'Basquete',
           status: 'em_andamento',
           period: { label: 'quarto', current: 1, total: 4 },
-          timer: { type: 'regressivo', periodDurationSeconds: 600 },
+          timer: { type: 'regressivo', periodDurationSeconds: 600, running: true, elapsedSeconds: 42 },
           teams: {
             A: { name: 'Lakers', shortName: 'LAL', color: '#552583', score: 5 },
             B: { name: 'Celtics', shortName: 'BOS', color: '#007A33', score: 2 },
@@ -227,6 +227,19 @@ module.exports = {
           { status: 'em_andamento' }
         ),
         responses: { 200: ok('Partida', ref('Match')), 400: err('Status inválido'), 401: err('Não autenticado'), 403: err('Não é o criador'), 404: err('Não encontrada'), 409: err('Transição inválida') },
+      },
+    },
+    '/matches/{id}/timer': {
+      patch: {
+        tags: ['Partidas'],
+        summary: 'Controla o cronômetro: start, pause ou reset (partida em andamento)',
+        security: secured,
+        parameters: [idParam('id')],
+        requestBody: json(
+          { type: 'object', required: ['action'], properties: { action: { type: 'string', enum: ['start', 'pause', 'reset'] } } },
+          { action: 'start' }
+        ),
+        responses: { 200: ok('Placar com o estado do cronômetro', ref('Scoreboard')), 400: err('Ação inválida ou modalidade sem cronômetro'), 401: err('Não autenticado'), 403: err('Não é o criador'), 404: err('Não encontrada'), 409: err('Partida não está em andamento') },
       },
     },
     '/matches/{id}/period/next': {

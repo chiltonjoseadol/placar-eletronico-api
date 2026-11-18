@@ -141,6 +141,21 @@ async function update(userId, id, body = {}) {
   return matchRepository.update(match, data);
 }
 
+/** Milissegundos decorridos no cronômetro (acumulado + trecho em execução). */
+function elapsedMs(match, now = Date.now()) {
+  let ms = match.timerElapsedMs;
+  if (match.timerStartedAt) ms += now - new Date(match.timerStartedAt).getTime();
+  if (match.timerType === 'regressivo' && match.periodDurationSeconds) {
+    ms = Math.min(ms, match.periodDurationSeconds * 1000);
+  }
+  return Math.max(0, ms);
+}
+
+/** Campos que congelam o cronômetro no valor atual. */
+function pausedFields(match) {
+  return { timerElapsedMs: elapsedMs(match), timerStartedAt: null };
+}
+
 async function changeStatus(userId, id, status) {
   const match = await getOwned(id, userId);
   if (!STATUSES.includes(status)) {
@@ -149,7 +164,31 @@ async function changeStatus(userId, id, status) {
   if (!STATUS_TRANSITIONS[match.status].includes(status)) {
     throw new AppError(`Transição inválida: '${match.status}' -> '${status}'.`, 409);
   }
-  return matchRepository.update(match, { status });
+  const data = { status };
+  if (status === 'finalizado') Object.assign(data, pausedFields(match));
+  return matchRepository.update(match, data);
+}
+
+async function timerAction(userId, id, action) {
+  const match = await getOwned(id, userId);
+  if (!['start', 'pause', 'reset'].includes(action)) {
+    throw new AppError("Campo 'action' deve ser 'start', 'pause' ou 'reset'.", 400);
+  }
+  if (match.timerType === 'nenhum') {
+    throw new AppError('Esta partida não usa cronômetro.', 400);
+  }
+  if (match.status !== 'em_andamento') {
+    throw new AppError('O cronômetro só pode ser controlado com a partida em andamento.', 409);
+  }
+
+  if (action === 'start') {
+    if (!match.timerStartedAt) await matchRepository.update(match, { timerStartedAt: new Date() });
+  } else if (action === 'pause') {
+    await matchRepository.update(match, pausedFields(match));
+  } else {
+    await matchRepository.update(match, { timerElapsedMs: 0, timerStartedAt: null });
+  }
+  return match;
 }
 
 async function nextPeriod(userId, id) {
@@ -165,7 +204,12 @@ async function nextPeriod(userId, id) {
   if (match.currentPeriod >= rules.totalPeriods) {
     throw new AppError(`A partida já está no último ${rules.periodLabel}.`, 409);
   }
-  return matchRepository.update(match, { currentPeriod: match.currentPeriod + 1 });
+  // Novo período: cronômetro volta a zero e fica pausado
+  return matchRepository.update(match, {
+    currentPeriod: match.currentPeriod + 1,
+    timerElapsedMs: 0,
+    timerStartedAt: null,
+  });
 }
 
 async function remove(userId, id) {
@@ -199,7 +243,12 @@ async function getScoreboard(id) {
     sportLabel: rules.label,
     status: match.status,
     period: { label: rules.periodLabel, current: currentPeriod, total: rules.totalPeriods },
-    timer: { type: match.timerType, periodDurationSeconds: match.periodDurationSeconds },
+    timer: {
+      type: match.timerType,
+      periodDurationSeconds: match.periodDurationSeconds,
+      running: !!match.timerStartedAt,
+      elapsedSeconds: Math.floor(elapsedMs(match) / 1000),
+    },
     teams: { A: team('A'), B: team('B') },
     ...(rules.sets ? { setHistory: state.setHistory, winner: state.winner } : {}),
     updatedAt: match.updatedAt,
@@ -213,6 +262,7 @@ module.exports = {
   getOwned,
   update,
   changeStatus,
+  timerAction,
   nextPeriod,
   remove,
   getScoreboard,

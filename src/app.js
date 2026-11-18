@@ -1,4 +1,5 @@
 require('dotenv').config();
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
@@ -11,7 +12,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => res.redirect('/apidocs'));
+// Front-end (painel em / e telão em /placar.html)
+app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/apidocs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/api', routes);
 

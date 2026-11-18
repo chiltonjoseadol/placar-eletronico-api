@@ -8,6 +8,18 @@ Back-end RESTful de um placar eletrônico para **Futebol**, **Basquete** e **Vô
 
 Node.js, Express, Sequelize (SQLite por padrão, ou MySQL/PostgreSQL), JWT (`jsonwebtoken` + `bcryptjs`) e Swagger UI (OpenAPI 3).
 
+## Front-end (opcional)
+
+Além da API, o projeto inclui um front-end simples (HTML, CSS e JS puro, pasta `public/`), servido pela própria API:
+
+| URL | O que é |
+|---|---|
+| <http://localhost:3000/> | **Painel de controle:** login/cadastro, criação de partidas, botões de gol/ponto/falta/cartão/tempo técnico, cronômetro, próximo período, desfazer evento |
+| <http://localhost:3000/placar.html?id=1> | **Telão:** placar em tela cheia com as cores dos times, período, cronômetro e sets; atualiza sozinho a cada segundo |
+| <http://localhost:3000/apidocs> | Swagger |
+
+Para demonstrar: abra o painel em uma aba, o telão em outra janela (ou em outro dispositivo da mesma rede) e marque pontos no painel.
+
 ## Como rodar
 
 ```bash
@@ -54,6 +66,7 @@ src/
 ├── middlewares/   autenticação JWT, tratamento de erros
 ├── utils/         regras por modalidade, cálculo do placar, validações
 └── docs/          especificação OpenAPI
+public/            front-end (painel e telão)
 ```
 
 Fluxo: `route → controller → service → repository → model`.
@@ -86,7 +99,8 @@ Relacionamentos: `User 1:N Match` e `Match 1:N MatchEvent` (exclusão em cascata
 | DELETE | `/api/matches/{id}` | sim | Exclui |
 | GET | `/api/matches/{id}/scoreboard` | não | Payload de exibição do placar |
 | PATCH | `/api/matches/{id}/status` | sim | Muda o status |
-| PATCH | `/api/matches/{id}/period/next` | sim | Próximo tempo/quarto |
+| PATCH | `/api/matches/{id}/period/next` | sim | Próximo tempo/quarto (zera o cronômetro) |
+| PATCH | `/api/matches/{id}/timer` | sim | Cronômetro: `start`, `pause` ou `reset` |
 | GET | `/api/matches/{id}/events` | não | Lista eventos |
 | POST | `/api/matches/{id}/events` | sim | Registra evento |
 | DELETE | `/api/matches/{id}/events/{eventId}` | sim | Desfaz evento |

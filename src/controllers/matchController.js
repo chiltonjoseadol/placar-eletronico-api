@@ -9,6 +9,10 @@ module.exports = {
     res.status(200).json(await matchService.update(req.userId, req.params.id, req.body)),
   changeStatus: async (req, res) =>
     res.status(200).json(await matchService.changeStatus(req.userId, req.params.id, (req.body || {}).status)),
+  timer: async (req, res) => {
+    await matchService.timerAction(req.userId, req.params.id, (req.body || {}).action);
+    res.status(200).json(await matchService.getScoreboard(req.params.id));
+  },
   nextPeriod: async (req, res) =>
     res.status(200).json(await matchService.nextPeriod(req.userId, req.params.id)),
   remove: async (req, res) => {

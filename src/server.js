@@ -9,7 +9,8 @@ async function start() {
     throw new Error('JWT_SECRET não definido. Copie .env.example para .env e configure.');
   }
   await sequelize.authenticate();
-  await sequelize.sync();
+  // alter: adiciona colunas novas em bancos já existentes sem apagar dados
+  await sequelize.sync({ alter: true });
   app.listen(PORT, () => {
     console.log(`API rodando em http://localhost:${PORT}`);
     console.log(`Swagger em http://localhost:${PORT}/apidocs`);
