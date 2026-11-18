@@ -158,6 +158,7 @@ async function openControl(id) {
   history.replaceState(null, '', `/?match=${id}`);
   show('controlView');
   $('tvLink').href = `/placar.html?id=${id}`;
+  $('apiLink').href = `/api/matches/${id}/scoreboard`;
   const mine = match.userId === me.id;
   $('ownerMsg').classList.toggle('hidden', mine);
   $('matchControls').classList.toggle('hidden', !mine);
