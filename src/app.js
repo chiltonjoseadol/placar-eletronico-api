@@ -11,7 +11,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => res.json({ name: 'API Placar Eletrônico', docs: '/apidocs' }));
+app.get('/', (req, res) => res.redirect('/apidocs'));
 app.use('/apidocs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/api', routes);
 
